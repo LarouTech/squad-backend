@@ -1,9 +1,11 @@
 /* eslint-disable prettier/prettier */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { Cron } from '@nestjs/schedule';
 import { Model, Query } from 'mongoose';
 import { Players } from '../models/players.model';
 import { NhlService } from '../nhl.service';
+import { Statistics } from './models/statistics.model';
 import { Player, PlayerDocument } from './player.schema';
 
 @Injectable()
@@ -14,12 +16,22 @@ export class PlayersDbService {
         private nhlService: NhlService) { }
 
     //PRIVATE GET ALL PLAYERS FROM MONGODB
-    // async getAllPlayersFromMongo() {
-        
+    async getAllPlayersFromMongo() {
 
-    // }
+
+        try {
+            const players = await this.playerModel.find()
+            return players 
+            
+        } catch (error) {
+            throw new NotFoundException(error);
+        }
+
+    }
 
     //SAVE OR UPDATE PLAYER COLLECTION CONTROLLER
+    //CRON JOB RUNNNING DAILY AT 6:00AM
+    @Cron('0 00 6 * * *')
     async savePlayersToMongoController() {
         const allPlayers = await this.getPlayersPromisify();
 
@@ -28,6 +40,7 @@ export class PlayersDbService {
                 this.saveOrUpdatePlayerRecords(player)
             })
 
+            console.log({ message: 'PLAYER collection has been updated in mongodb' })
             return {
                 message: 'PLAYER collection has been updated in mongodb',
             }
@@ -56,7 +69,7 @@ export class PlayersDbService {
 
     }
 
-    //TRANSFORM GET ALL PLAYERS TO PROMISE
+    //TRANSFORM GET ALL PLAYERS TO PROMISE FROM OBSERVABLE
     private async getPlayersPromisify(): Promise<Players[]> {
         let playersObj: Players[];
 

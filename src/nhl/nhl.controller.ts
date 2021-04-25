@@ -26,10 +26,10 @@ export class NhlController {
         return this.nhlService.getTeamById(id);
     }
 
-    @Get('teams/:id/roster')
-    getTeamRosterById(@Param('id') id: string): Observable<TeamRoster> {
-        return this.nhlService.getTeamRosterById(id)
-    }
+    // @Get('teams/:id/roster')
+    // getTeamRosterById(@Param('id') id: string): Observable<TeamRoster> {
+    //     return this.nhlService.getTeamRosterById(id)
+    // }
 
     @Get('players/:id')
     getPlayerStats(
@@ -38,25 +38,32 @@ export class NhlController {
         return this.nhlService.getPlayer(id, getPlayerStatsDto);
     }
 
-    @Get('players')
-    getAllPlayersStats(@Query() getPlayerStatsDto?: GetPlayerStatsDto): Observable<Players[]> {
-        return this.nhlService.getAllPlayers(getPlayerStatsDto);
-    }
+    // @Get('players')
+    // getAllPlayersStats(@Query() getPlayerStatsDto?: GetPlayerStatsDto): Observable<Players[]> {
+    //     return this.nhlService.getAllPlayers(getPlayerStatsDto);
+    // }
 
     @Get('teamId/all')
     getAllTeamId(): Observable<number[]> {
         return this.nhlService.getAllTeamId()
     }
 
-    @Get('rosters/all')
-    getAllRosters(): Observable<Roster[]> {
-        return this.nhlService.getAllRosters();
+    // @Get('rosters/all')
+    // getAllRosters(): Observable<Roster[]> {
+    //     return this.nhlService.getAllRosters();
+    // }
+
+    @Get('fetch/players')
+    fetchPlayers() {
+        return this.playersDbService.getAllPlayersFromMongo();
     }
 
-    @Get('save')
-    save() {
-        return this.playersDbService.savePlayersToMongoController();
-    }
+    // @Get('save')
+    // save() {
+    //     return this.playersDbService.savePlayersToMongoController();
+    // }
+
+
 
 
 }

@@ -7,9 +7,7 @@ import { Logo } from "./models/logo.model";
 import { TeamInfo } from "./models/team-info.model";
 import { Stats } from "./models/statistics.model";
 
-
 export type PlayerDocument = Player & Document;
-
 
 @Schema()
 export class Player extends Document {

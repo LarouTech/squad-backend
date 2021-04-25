@@ -162,8 +162,16 @@ export class NhlService implements OnModuleInit {
             )
     }
 
+    //GET ARRAY OF ACTIVE TEAM ID
+    getAllTeamId(): Observable<number[]> {
+        return this.getTeams()
+            .pipe(map((teams: Team[]) => {
+                return teams.map(t => t.id);
+            }))
+    }
+
     //GET ALL ACTIVE ROSTERS
-    getAllRosters(): Observable<Roster[]> {
+    private getAllRosters(): Observable<Roster[]> {
         return this.getTeams()
             .pipe(
                 switchMap((teams: Team[]) => {
@@ -201,7 +209,7 @@ export class NhlService implements OnModuleInit {
     }
 
     //GET ROSTER PER TEAM ID
-    getTeamRosterById(id: string, team?: Team): Observable<TeamRoster> {
+    private getTeamRosterById(id: string, team?: Team): Observable<TeamRoster> {
         const urlTail = `teams/${id}/roster`
         return this.http.get<Roster>(this.urlSetter(urlTail))
             .pipe(
@@ -214,14 +222,6 @@ export class NhlService implements OnModuleInit {
                     return r
                 })
             )
-    }
-
-    //GET ARRAY OF ACTIVE TEAM ID
-    getAllTeamId(): Observable<number[]> {
-        return this.getTeams()
-            .pipe(map((teams: Team[]) => {
-                return teams.map(t => t.id);
-            }))
     }
 
     //ADD URL STRING TO statsApi VARIABLE
