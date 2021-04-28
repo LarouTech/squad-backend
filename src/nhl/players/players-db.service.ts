@@ -18,11 +18,10 @@ export class PlayersDbService {
     //PRIVATE GET ALL PLAYERS FROM MONGODB
     async getAllPlayersFromMongo() {
 
-
         try {
             const players = await this.playerModel.find()
-            return players 
-            
+            return players
+
         } catch (error) {
             throw new NotFoundException(error);
         }
@@ -56,9 +55,9 @@ export class PlayersDbService {
         const playerExist = await this.findPlayerByNhlId(player.id);
 
         try {
-
             if (!playerExist.length) {
                 playerDataModel.save();
+                return player
             } else {
                 this.playerModel.updateOne({ _id: playerExist[0]._id });
             }

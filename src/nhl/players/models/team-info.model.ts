@@ -3,6 +3,7 @@ import { Prop } from "@nestjs/mongoose";
 import { Conference } from "./conference.model";
 import { Division } from "./division.model";
 import { Franchise } from "./franchise.model";
+import { LogosModel } from "./logo.model";
 import { Venue } from "./venue.model";
 
 export class TeamInfo {
@@ -50,4 +51,7 @@ export class TeamInfo {
 
     @Prop()
     active: boolean;
+
+    @Prop({type: LogosModel})
+    logos: LogosModel
 }

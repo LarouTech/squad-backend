@@ -114,6 +114,10 @@ export interface Team {
     officialSiteUrl: string,
     franchiseId: number,
     active: boolean,
-    logos?: Logos,
+    logos?: {
+        dark: Logos
+        light: Logos,
+        alt: Logos
+    }
     stats?: TeamStats
 }

@@ -23,3 +23,14 @@ export class Logo {
     @Prop()
     url: string
 }
+
+export class LogosModel {
+    @Prop({type: Logo})
+    dark: Logo;
+
+    @Prop({type: Logo})
+    light: Logo;
+
+    @Prop({type: Logo, required: false})
+    alt?: Logo;
+}

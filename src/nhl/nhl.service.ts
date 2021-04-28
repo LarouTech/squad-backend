@@ -41,7 +41,7 @@ export class NhlService implements OnModuleInit {
         return this.http.get<Team[]>(this.urlSetter('teams'))
             .pipe(
                 this.nhlStatsOperator('teams'),
-                mergeMap((teams: Team[]) => {
+                mergeMap((teams: any[]) => {
 
                     return this.http.get(this.logosApi)
                         .pipe(
@@ -50,10 +50,20 @@ export class NhlService implements OnModuleInit {
 
                                 return teams = teams.map(team => {
 
+                                    const logosArr: any[] = logos.filter(t => t.mostRecentTeamId === team.id)[0].teams[0].logos
+                                    .filter(logo => logo.endSeason === +this.configService.get('nhl.currentSeason'))
+
+                                    const light = logosArr.filter(l => l.background === 'light')[0];
+                                    const dark = logosArr.filter(l => l.background === 'dark')[0];
+                                    const alt = logosArr.filter(l => l.background === 'alt')[0];
+
                                     return {
                                         ...team,
-                                        logos: logos.filter(t => t.mostRecentTeamId === team.id)[0].teams[0].logos
-                                            .filter(logo => logo.endSeason === +this.configService.get('nhl.currentSeason'))
+                                        logos: {
+                                            dark: dark,
+                                            light: light,
+                                            alt: alt
+                                        }
                                     }
                                 })
                             })
@@ -132,6 +142,7 @@ export class NhlService implements OnModuleInit {
                 this.nhlStatsOperator('stats'),
                 map(player => {
 
+                    console.log(this.urlSetter(urlTail))
                     return {
                         stats: {
                             type: player['0'].type,
@@ -185,6 +196,7 @@ export class NhlService implements OnModuleInit {
                         .pipe(map(
                             (obj: any[]) => {
                                 const allRosters = [];
+
 
                                 obj.forEach(element => {
                                     const team = element.team

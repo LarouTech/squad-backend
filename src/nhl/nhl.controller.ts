@@ -38,10 +38,10 @@ export class NhlController {
         return this.nhlService.getPlayer(id, getPlayerStatsDto);
     }
 
-    // @Get('players')
-    // getAllPlayersStats(@Query() getPlayerStatsDto?: GetPlayerStatsDto): Observable<Players[]> {
-    //     return this.nhlService.getAllPlayers(getPlayerStatsDto);
-    // }
+    @Get('players')
+    getAllPlayersStats(@Query() getPlayerStatsDto?: GetPlayerStatsDto): Observable<Players[]> {
+        return this.nhlService.getAllPlayers(getPlayerStatsDto);
+    }
 
     @Get('teamId/all')
     getAllTeamId(): Observable<number[]> {
@@ -58,10 +58,10 @@ export class NhlController {
         return this.playersDbService.getAllPlayersFromMongo();
     }
 
-    // @Get('save')
-    // save() {
-    //     return this.playersDbService.savePlayersToMongoController();
-    // }
+    @Get('save')
+    save() {
+        return this.playersDbService.savePlayersToMongoController();
+    }
 
 
 

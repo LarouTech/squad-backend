@@ -63,6 +63,20 @@ interface PlayerStats {
 
 }
 
+interface logo {    
+    id: number,
+    background: string,
+    endSeason: number,
+    secureUrl: string,
+    startSeason: number,
+    teamId: number,
+    url: string,
+}
+
+export interface LogoModel {
+    logos: Array<logo>
+}
+
 export interface Players {
     id: string,
     jerseyNumber: string,
@@ -72,4 +86,6 @@ export interface Players {
     stats: PlayerStats
     headshot: string,
     actionshot: string,
+    logos?: LogoModel
 }
+

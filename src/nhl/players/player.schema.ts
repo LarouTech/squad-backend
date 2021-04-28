@@ -3,7 +3,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from 'mongoose';
 import { Person } from "./models/person.model";
 import { Position } from "./models/position.model";
-import { Logo } from "./models/logo.model";
+import { LogosModel } from "./models/logo.model";
 import { TeamInfo } from "./models/team-info.model";
 import { Stats } from "./models/statistics.model";
 
@@ -28,9 +28,6 @@ export class Player extends Document {
 
     @Prop({ type: TeamInfo })
     team: TeamInfo;
-
-    @Prop([Logo])
-    logos: Logo[];
 
     @Prop()
     headshot: string;
