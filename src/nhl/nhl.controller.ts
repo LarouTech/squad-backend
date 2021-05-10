@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { GetPlayerStatsDto } from './dto/get-player-stats.dto';
 import { Players } from './models/players.model';
@@ -63,7 +63,10 @@ export class NhlController {
         return this.playersDbService.savePlayersToMongoController();
     }
 
-
+    @Get('country/:code')
+    getCountryByID(@Param('code') code: string ) {
+        return this.nhlService.getCountryByID(code)
+    }
 
 
 }

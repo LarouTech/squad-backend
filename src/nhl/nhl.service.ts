@@ -10,6 +10,8 @@ import { GetPlayerStatsDto } from './dto/get-player-stats.dto';
 import { Players } from './models/players.model';
 import { TeamRoster } from './models/team-roster.model';
 import { PlayerStatsEnum } from './enums/players-stats.enum'
+import { People } from './players/models/people.model';
+import { Logo } from './players/models/logo.model';
 
 @Injectable()
 export class NhlService implements OnModuleInit {
@@ -36,22 +38,36 @@ export class NhlService implements OnModuleInit {
         this.logosApi = this.configService.get('nhl.logosApi')
     }
 
-    //GET ALL NHL TEAMS
+    getCountryByID(code: string) {
+        const api = 'https://restcountries.eu/rest/v2/alpha'
+        return this.http.get(`${api}/${code}`)
+            .pipe(
+                map((res: AxiosResponse) => {
+                    return res.data
+                })
+            )
+    }
+
+
+    //GET ALL NHL TEAMS n
     getTeams(): Observable<Team[]> {
         return this.http.get<Team[]>(this.urlSetter('teams'))
             .pipe(
                 this.nhlStatsOperator('teams'),
-                mergeMap((teams: any[]) => {
+                mergeMap((teams: Team[]) => {
 
                     return this.http.get(this.logosApi)
                         .pipe(
                             this.nhlStatsOperator('data'),
                             map((logos: any[]) => {
 
+                                //exclude seatle kraken
+                                teams = teams.filter(t => t.id != 55)
+
                                 return teams = teams.map(team => {
 
                                     const logosArr: any[] = logos.filter(t => t.mostRecentTeamId === team.id)[0].teams[0].logos
-                                    .filter(logo => logo.endSeason === +this.configService.get('nhl.currentSeason'))
+                                        .filter(logo => logo.endSeason === +this.configService.get('nhl.currentSeason'))
 
                                     const light = logosArr.filter(l => l.background === 'light')[0];
                                     const dark = logosArr.filter(l => l.background === 'dark')[0];
@@ -90,10 +106,20 @@ export class NhlService implements OnModuleInit {
                                     return team
                                 }
 
+                                const teamLogos: Logo[] = logos.filter(t => t.mostRecentTeamId === team.id)[0].teams[0].logos
+                                    .filter(logo => logo.endSeason === +this.configService.get('nhl.currentSeason'))
+
+                                const dark = teamLogos.filter(l => l.background === 'dark')[0];
+                                const light = teamLogos.filter(l => l.background === 'light')[0];
+                                const alt = teamLogos.filter(l => l.background === 'alt')[0];
+
                                 return {
                                     ...team,
-                                    logos: logos.filter(t => t.mostRecentTeamId === team.id)[0].teams[0].logos
-                                        .filter(logo => logo.endSeason === +this.configService.get('nhl.currentSeason'))
+                                    logos: {
+                                        dark: dark,
+                                        light: light,
+                                        alt: alt
+                                    }
                                 }
                             }),
                             mergeMap((team: Team) => {
@@ -129,32 +155,55 @@ export class NhlService implements OnModuleInit {
 
     //GET PLAYER STATS BY PLAYER ID
     getPlayer(id: string, dto?: GetPlayerStatsDto, roster?: Roster): Observable<Players> {
-        const config: AxiosRequestConfig = {
-            params: {
-                stats: PlayerStatsEnum.singleSeason,
-                season: this.configService.get('auth.currentSeason')
+        let config: AxiosRequestConfig
+        if (dto) {
+            config = {
+                params: {
+                    stats: dto.stats,
+                    // season: this.configService.get('auth.currentSeason')
+                }
+            }
+        } else {
+            config = {
+                params: {
+                    stats: PlayerStatsEnum.singleSeason,
+                    season: this.configService.get('auth.currentSeason')
+                }
             }
         }
 
-        const urlTail = `people/${id}/stats`;
-        return this.http.get<Players>(this.urlSetter(urlTail), config)
-            .pipe(
-                this.nhlStatsOperator('stats'),
-                map(player => {
 
-                    console.log(this.urlSetter(urlTail))
-                    return {
-                        stats: {
-                            type: player['0'].type,
-                            stats: player['0'].splits[0]
-                        },
-                        id: id,
-                        ...roster,
-                        headshot: `${this.imageApi}/headshots/current/168x168/${id}.jpg`,
-                        actionshot: `${this.imageApi}/actionshots/${id}.jpg`
-                    }
+
+        const urlTail1 = `people/${id}`;
+        const urlTail2 = `people/${id}/stats`;
+
+        return this.http.get<People>(this.urlSetter(urlTail1))
+            .pipe(
+                this.nhlStatsOperator('people'),
+                mergeMap((people: People) => {
+
+                    return this.http.get<Players>(this.urlSetter(urlTail2), config)
+                        .pipe(
+                            this.nhlStatsOperator('stats'),
+                            map(player => {
+
+                                return {
+                                    stats: {
+                                        type: player['0'].type,
+                                        stats: !dto ? player['0'].splits[0] : player['0'].splits
+                                    },
+                                    id: id,
+                                    ...roster,
+                                    headshot: `${this.imageApi}/headshots/current/168x168/${id}.jpg`,
+                                    actionshot: `${this.imageApi}/actionshots/${id}.jpg`,
+                                    people: people[0]
+                                }
+                            })
+                        )
                 })
             )
+
+
     }
 
     //GET ALL ACTIVE PLAYERS STATS
@@ -188,6 +237,9 @@ export class NhlService implements OnModuleInit {
                 switchMap((teams: Team[]) => {
                     const rosterPerTeam: Observable<TeamRoster>[] = []
 
+                    //FILTER OUT SEATLE KRAKENS
+                    teams = teams.filter(t => t.id != 55)
+
                     teams.forEach(team => {
                         rosterPerTeam.push(this.getTeamRosterById(team.id.toString(), team))
                     })
@@ -208,6 +260,7 @@ export class NhlService implements OnModuleInit {
                                         allRosters.push(roster)
                                     })
                                 })
+
 
                                 return allRosters
                             }
