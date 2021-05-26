@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import configuration from './configuration';
 import { LeagueModule } from './league/league.module';
 import { NhlModule } from './nhl/nhl.module';
+import { ProfileModule } from './profile/profile.module';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { NhlModule } from './nhl/nhl.module';
     ScheduleModule.forRoot(),
     AuthModule,
     LeagueModule,
-    NhlModule
+    NhlModule,
+    ProfileModule
   ],
   controllers: [],
   providers: [],

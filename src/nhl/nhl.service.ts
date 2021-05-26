@@ -1,9 +1,9 @@
 /* eslint-disable prettier/prettier */
-import { HttpService, Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
+import { HttpService, Injectable, NotFoundException, OnModuleInit, Param } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { combineLatest, Observable, pipe } from 'rxjs';
 import { AxiosResponse, AxiosRequestConfig } from 'axios';
-import { catchError, map, mergeMap, switchMap } from 'rxjs/operators';
+import { catchError, map, mergeMap, switchMap, tap } from 'rxjs/operators';
 import { Team } from './models/team.model';
 import { Roster } from './models/roster.model';
 import { GetPlayerStatsDto } from './dto/get-player-stats.dto';
@@ -12,6 +12,10 @@ import { TeamRoster } from './models/team-roster.model';
 import { PlayerStatsEnum } from './enums/players-stats.enum'
 import { People } from './players/models/people.model';
 import { Logo } from './players/models/logo.model';
+import { Schedule } from './players/models/schedule.model';
+import { TeamsEnum } from './enums/teams.enum';
+import { GameLogs } from './players/models/gamelog.model';
+import { Standings } from './players/models/standings.model';
 
 @Injectable()
 export class NhlService implements OnModuleInit {
@@ -36,14 +40,78 @@ export class NhlService implements OnModuleInit {
         this.statsApi = this.configService.get('nhl.statsApi')
         this.imageApi = this.configService.get('nhl.imagesApi')
         this.logosApi = this.configService.get('nhl.logosApi')
+
     }
 
+    //GET NHL STANDINGS
+    getStandings(standingType?: 'byConference' | 'byDivision' | 'regularSeason'): Observable<Standings[]> {
+        const params = {
+            standingsType: !standingType ? 'regularSeason' : standingType,
+            season: this.configService.get('nhl.currentSeason'),
+            expand: 'standings.record'
+        }
+
+        return this.http.get<Standings[]>(this.urlSetter('standings'), {params: params})
+        .pipe(this.nhlStatsOperator('records'))
+    }
+
+    //GET COUNTRY DATA BY COUNTRY CODE
     getCountryByID(code: string) {
         const api = 'https://restcountries.eu/rest/v2/alpha'
         return this.http.get(`${api}/${code}`)
             .pipe(
                 map((res: AxiosResponse) => {
                     return res.data
+                })
+            )
+    }
+
+    //GET PLAYER STATS BY ID FOR EACH GAME PLAYED IN A SPECIFIC SEASON
+    getPlayerStatsGameLogs(id: string | number, opponentId?: string | number): Observable<any> {
+        const params = {
+            stats: 'gameLog',
+            season: +this.configService.get<GameLogs>('nhl.currentSeason')
+        }
+
+        return this.http.get(this.urlSetter(`people/${id}/stats/`), { params: params })
+            .pipe(
+                this.nhlStatsOperator('stats'),
+                map((stats: GameLogs) => {
+                    return stats[0]
+                }),
+                map((stats: GameLogs) => {
+                    if (opponentId) {
+                        return stats.splits.filter(spl => spl.opponent.id === +opponentId)
+                    } else {
+                        return stats
+                    }
+                })
+            )
+    }
+
+    //GET LOGOS BY TEAM ID
+    getLogosByTeamId(id: TeamsEnum, year?: number | string, type?: 'dark' | 'light' | 'alt'): Observable<Logo[]> {
+        if (!(id in TeamsEnum)) {
+            throw new NotFoundException('please enter a valid team Id')
+        }
+
+        const api = `https://records.nhl.com/site/api/franchise?include=teams.logos&cayenneExp=mostRecentTeamId=${id.toString()}`
+
+        return this.http.get<Logo[]>(api)
+            .pipe(
+                this.nhlStatsOperator('data'),
+                map(data => {
+                    return data[0].teams[0].logos
+                }),
+                map((logos: Logo[]) => {
+                    if (year) {
+
+                        return logos.filter(l => {
+                             return type ? l.endSeason === +year && l.background === type : l.endSeason === +year
+                        })
+                    } else {
+                        return logos
+                    }
                 })
             )
     }
@@ -167,7 +235,7 @@ export class NhlService implements OnModuleInit {
             config = {
                 params: {
                     stats: PlayerStatsEnum.singleSeason,
-                    season: this.configService.get('auth.currentSeason')
+                    season: this.configService.get('nhl.currentSeason')
                 }
             }
         }
@@ -228,6 +296,42 @@ export class NhlService implements OnModuleInit {
             .pipe(map((teams: Team[]) => {
                 return teams.map(t => t.id);
             }))
+    }
+
+    //GET ALL SEASONS GAMES
+    getAllSeasonGames() {
+        return this.http.get(this.urlSetter('schedule'), { params: { season: this.configService.get('nhl.currentSeason') } })
+            .pipe(this.nhlStatsOperator('dates'))
+    }
+
+    //GET TODAYS GAMES
+    getTodayGames(): Observable<Schedule[]> {
+        return this.http.get<Schedule[]>(this.urlSetter('schedule'))
+            .pipe(this.nhlStatsOperator('dates'))
+    }
+
+    //GET ALL SEASON + PLAYOFF GAMES BY TEAM ID
+    getAllGamesByTeamId(id: number | string): Observable<Schedule[]> {
+        const params = {
+            season: this.configService.get<Schedule[]>('nhl.currentSeason'),
+            teamId: id
+        }
+        return this.http.get(this.urlSetter('schedule'), { params: params })
+            .pipe(
+                this.nhlStatsOperator('dates'),
+                map((schedule: Schedule[]) => {
+
+                    return schedule.map(s => {
+                        return {
+                            ...s,
+                            games: s.games[0]
+                        }
+                    })
+
+
+                })
+            )
+
     }
 
     //GET ALL ACTIVE ROSTERS

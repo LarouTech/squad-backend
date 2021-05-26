@@ -28,8 +28,23 @@ export class LeagueService {
         }
     }
 
+    //DELETE LEAGUE BY ID
+    async deleteLeagueById(id: string) {
+        const result = this.leagueModel.deleteOne({_id: id});
+        try {
+            return {
+                ... await result,
+                _id: id
+            };
+
+        } catch (error) {
+            console.log(error)
+            throw new NotFoundException(error);
+        }
+    }
+
     //GET MY LEAGUE     
-    async getMyLeague(bearer: string): Promise<LeagueDocument[]> {
+    async getMyLeagues(bearer: string): Promise<LeagueDocument[]> {
         const userId = await this.getUserId(bearer)
         const leagues = this.leagueModel.find({ ownerId: userId });
 

@@ -10,6 +10,7 @@ export default () => ({
         statsApi: 'https://statsapi.web.nhl.com/api/v1',
         imagesApi: 'https://cms.nhl.bamgrid.com/images',
         logosApi: 'https://records.nhl.com/site/api/franchise?include=teams.logos',
+        logoApiV2: 'https://records.nhl.com/site/api/franchise',
         currentSeason: '20202021'
     }
 });

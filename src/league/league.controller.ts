@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { LeagueService } from './league.service';
 import { LeagueModel } from './model/league.model';
 import { Request } from 'express';
@@ -23,6 +23,12 @@ export class LeagueController {
     @Get('my-league')
     getMyLeague(@Req() req: Request): Promise<LeagueDocument[]> {
         const bearer = req.headers.authorization;
-        return this.leagueService.getMyLeague(bearer)
+        return this.leagueService.getMyLeagues(bearer)
+    }
+
+    @Delete('delete/:id')
+    deleteLeagueById(@Param('id') id: string) {
+        console.log(id)
+        return this.leagueService.deleteLeagueById(id)
     }
 }
