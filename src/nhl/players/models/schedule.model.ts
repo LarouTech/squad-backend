@@ -1,4 +1,79 @@
 /* eslint-disable prettier/prettier */
+export class Period {
+  away: {
+    goals: number,
+    rinkSide: string,
+    shotOnGoal: number
+  }
+  endTime: Date;
+  home: {
+    goals: number,
+    rinkSide: string,
+    shotOnGoal: number
+  };
+  num: number;
+  ordinalNum: string;
+  periodeType: string;
+  startTime: Date
+}
+
+export class LineScore {
+  currentPeriod: number;
+  currentPeriodOrdinal: string;
+  currentPeriodTimeRemaining: string;
+  hasShootout: boolean;
+  intermissionInfo: {
+    inIntermission: boolean,
+    intermissionTimeElapsed: number,
+    intermissionTimeRemaining: number
+  };
+  periods: Period[];
+  powerPlayInfo: {
+    inSituation: boolean,
+    situationTimeElapsed: number,
+    situationTimeRemaining: number
+  }
+  powerPlayStrength: string
+  shootoutInfo: {
+    away: {
+      attempts: number;
+      scores: number
+    };
+    home: {
+      attempts: number;
+      scores: number
+    }
+  };
+  teams: {
+    away: {
+      goaliePulled: boolean,
+      goals: number,
+      numSkaters: number,
+      powerPlay: boolean,
+      shotsOnGoal: number
+      team: {
+        id: number,
+        name: string,
+        link: string
+      }
+    };
+    home: {
+      goaliePulled: boolean,
+      goals: number,
+      numSkaters: number,
+      powerPlay: boolean,
+      shotsOnGoal: number
+      team: {
+        id: number,
+        name: string,
+        link: string
+      }
+    };
+  }
+
+
+}
+
 export class ScheduleGames {
   content: {
     link: string;
@@ -6,6 +81,7 @@ export class ScheduleGames {
   gameDate: Date;
   gamePk: number;
   gameType: string;
+  linescore?: LineScore
   link: string;
   season: string;
   status: {
@@ -28,6 +104,7 @@ export class ScheduleGames {
         id: number;
         name: string;
         link: string;
+        logos?: any
       };
     };
     home: {
@@ -42,6 +119,7 @@ export class ScheduleGames {
         id: number;
         name: string;
         link: string;
+        logos?: any
       };
     };
   };
@@ -51,6 +129,8 @@ export class ScheduleGames {
     name: string;
   };
 }
+
+
 
 export class Schedule {
   date: string;
@@ -70,4 +150,5 @@ export class TodaySchedule {
   totalGames: number;
   totalItems: number;
   totalMatches: number;
+
 }

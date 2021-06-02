@@ -12,5 +12,9 @@ export default () => ({
         logosApi: 'https://records.nhl.com/site/api/franchise?include=teams.logos',
         logoApiV2: 'https://records.nhl.com/site/api/franchise',
         currentSeason: '20202021'
+    },
+    s3Bucket: {
+        profilePictureBucketArn: 'arn:aws:s3:::squad-profile-picture-bucket',
+        profilePictureBucketName: 'squad-profile-picture-bucket'
     }
 });

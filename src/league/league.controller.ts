@@ -4,9 +4,10 @@ import { LeagueService } from './league.service';
 import { LeagueModel } from './model/league.model';
 import { Request } from 'express';
 import { LeagueDocument } from './league.schema';
+import { AuthorizerGuard } from 'src/auth/authorizer.guard';
 
 
-// @UseGuards(AuthorizerGuard)
+@UseGuards(AuthorizerGuard)
 @Controller('league')
 export class LeagueController {
 

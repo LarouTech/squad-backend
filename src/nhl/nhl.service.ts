@@ -12,10 +12,13 @@ import { TeamRoster } from './models/team-roster.model';
 import { PlayerStatsEnum } from './enums/players-stats.enum'
 import { People } from './players/models/people.model';
 import { Logo } from './players/models/logo.model';
-import { Schedule } from './players/models/schedule.model';
+import { Schedule, ScheduleGames } from './players/models/schedule.model';
 import { TeamsEnum } from './enums/teams.enum';
 import { GameLogs } from './players/models/gamelog.model';
 import { Standings } from './players/models/standings.model';
+import { RedshiftData } from 'aws-sdk';
+import { GameDetails } from './players/models/game-details.model';
+import { Season } from './players/models/season.model';
 
 @Injectable()
 export class NhlService implements OnModuleInit {
@@ -43,6 +46,40 @@ export class NhlService implements OnModuleInit {
 
     }
 
+    //GET SEASON META DATA 
+    getSeasonMetaData(): Observable<Season> {
+        return this.http.get<Season>(this.urlSetter('seasons/current'))
+        .pipe(this.nhlStatsOperator('seasons'))
+    }
+
+
+    //GET GAME DATA BY GAMEID
+    getGameDeatilsByGameId(gameId: number | string): Observable<GameDetails> {
+        return this.http.get<GameDetails>(this.urlSetter(`game/${gameId}/feed/live`))
+            .pipe(
+                map((res: AxiosResponse) => {
+                    delete res.data.copyright
+                    const players: any[] = res.data.gameData.players;
+                    const newPlayers = Object.values(players);
+
+                    const awayLiveDataPlayers = res.data.liveData.boxscore.teams.away.players;
+                    const homeLiveDataPlayers = res.data.liveData.boxscore.teams.home.players
+
+                    const newAwayliveDataPlayers = Object.values(awayLiveDataPlayers)
+                    const newHomeliveDataPlayers = Object.values(homeLiveDataPlayers)
+
+                    res.data.liveData.boxscore.teams.away.players = newAwayliveDataPlayers;
+                    res.data.liveData.boxscore.teams.home.players = newHomeliveDataPlayers
+                    res.data.gameData.players = newPlayers
+
+                    return res.data 
+                 
+                }),
+                catchError((error) => {
+                    throw new NotFoundException(error);
+                }))
+    }
+
     //GET NHL STANDINGS
     getStandings(standingType?: 'byConference' | 'byDivision' | 'regularSeason'): Observable<Standings[]> {
         const params = {
@@ -51,8 +88,8 @@ export class NhlService implements OnModuleInit {
             expand: 'standings.record'
         }
 
-        return this.http.get<Standings[]>(this.urlSetter('standings'), {params: params})
-        .pipe(this.nhlStatsOperator('records'))
+        return this.http.get<Standings[]>(this.urlSetter('standings'), { params: params })
+            .pipe(this.nhlStatsOperator('records'))
     }
 
     //GET COUNTRY DATA BY COUNTRY CODE
@@ -90,7 +127,7 @@ export class NhlService implements OnModuleInit {
     }
 
     //GET LOGOS BY TEAM ID
-    getLogosByTeamId(id: TeamsEnum, year?: number | string, type?: 'dark' | 'light' | 'alt'): Observable<Logo[]> {
+    getLogosByTeamId(id: TeamsEnum, year?: number | string, type?: 'dark' | 'light' | 'alt', gameId?: number): Observable<Logo[]> {
         if (!(id in TeamsEnum)) {
             throw new NotFoundException('please enter a valid team Id')
         }
@@ -107,15 +144,14 @@ export class NhlService implements OnModuleInit {
                     if (year) {
 
                         return logos.filter(l => {
-                             return type ? l.endSeason === +year && l.background === type : l.endSeason === +year
+                            return type ? l.endSeason === +year && l.background === type : l.endSeason === +year
                         })
                     } else {
-                        return logos
+                        return !gameId ? logos : { ...logos, gameId }
                     }
                 })
             )
     }
-
 
     //GET ALL NHL TEAMS n
     getTeams(): Observable<Team[]> {
@@ -300,8 +336,16 @@ export class NhlService implements OnModuleInit {
 
     //GET ALL SEASONS GAMES
     getAllSeasonGames() {
-        return this.http.get(this.urlSetter('schedule'), { params: { season: this.configService.get('nhl.currentSeason') } })
-            .pipe(this.nhlStatsOperator('dates'))
+
+        const params = {
+            expand: 'schedule.linescore',
+            season: this.configService.get('nhl.currentSeason')
+        }
+
+        return this.http.get(this.urlSetter('schedule'), { params: params })
+            .pipe(
+                this.nhlStatsOperator('dates')
+            )
     }
 
     //GET TODAYS GAMES
