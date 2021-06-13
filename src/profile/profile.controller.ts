@@ -1,9 +1,11 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Delete, Get, Post, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { HttpRequest } from 'aws-sdk';
+import { AdminUpdateUserAttributesResponse } from 'aws-sdk/clients/cognitoidentityserviceprovider';
 import { S3PresignedUrl } from 'aws-sdk/clients/discovery';
 import { AuthorizerGuard } from 'src/auth/authorizer.guard';
+import { Profile } from './profile.schema';
 import { ProfileService } from './profile.service';
 
 @UseGuards(AuthorizerGuard)
@@ -11,6 +13,24 @@ import { ProfileService } from './profile.service';
 export class ProfileController {
 
   constructor(private profileService: ProfileService) { }
+
+  @Post('create')
+  createProfile(@Body() profile: Profile): Promise<Profile> {
+    return this.profileService.createProfile(profile)
+  }
+
+  @Get('link/:id')
+  linkProfileToCognito(
+    @Req() req: HttpRequest,
+    @Param('id') profileId: string): Promise<AdminUpdateUserAttributesResponse> {
+    const token = this.profileService.extractToken(req.headers.authorization);
+    return this.profileService.linkProfileToCognito(profileId, token)
+  }
+
+  @Get(':id')
+  getProfile(@Param('id') id: string): Promise<Profile[]> {
+    return this.profileService.getProfile(id)
+  }
 
   @Post('post/picture')
   @UseInterceptors(FileInterceptor('profile-picture'))

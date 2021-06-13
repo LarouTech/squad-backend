@@ -5,9 +5,10 @@ import { LeagueModel } from './model/league.model';
 import { Request } from 'express';
 import { LeagueDocument } from './league.schema';
 import { AuthorizerGuard } from 'src/auth/authorizer.guard';
+import { SendEmailResponse } from 'aws-sdk/clients/ses';
 
 
-@UseGuards(AuthorizerGuard)
+// @UseGuards(AuthorizerGuard)
 @Controller('league')
 export class LeagueController {
 
@@ -31,5 +32,11 @@ export class LeagueController {
     deleteLeagueById(@Param('id') id: string) {
         console.log(id)
         return this.leagueService.deleteLeagueById(id)
+    }
+
+    @Post('registration')
+    sendEmail(@Body('toAddress') toAddress: string[]): Promise<SendEmailResponse> {
+        console.log(toAddress)
+        return this.leagueService.sendEmailToJoinLeague(toAddress, 'lesTaps')
     }
 }

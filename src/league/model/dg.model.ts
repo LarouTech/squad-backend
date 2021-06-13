@@ -4,5 +4,6 @@ export interface DgModel {
 }
 
 interface GMs {
-  email: string
+  email: string,
+  confirmed: boolean
 }

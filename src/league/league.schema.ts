@@ -92,6 +92,12 @@ class KeyDates {
 class GMsProp {
     @Prop()
     email: string;
+
+    @Prop()
+    isUserExist: boolean;
+
+    @Prop()
+    confirmed: boolean;
 }
 
 class GMs {

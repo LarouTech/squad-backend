@@ -16,7 +16,6 @@ import { Schedule, ScheduleGames } from './players/models/schedule.model';
 import { TeamsEnum } from './enums/teams.enum';
 import { GameLogs } from './players/models/gamelog.model';
 import { Standings } from './players/models/standings.model';
-import { RedshiftData } from 'aws-sdk';
 import { GameDetails } from './players/models/game-details.model';
 import { Season } from './players/models/season.model';
 

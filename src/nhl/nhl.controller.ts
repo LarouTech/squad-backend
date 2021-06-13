@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { GetPlayerStatsDto } from './dto/get-player-stats.dto';
 import { TeamsEnum } from './enums/teams.enum';
@@ -20,7 +20,7 @@ export class NhlController {
 
     constructor(
         private nhlService: NhlService,
-        private playersDbService: PlayersDbService) { }
+        private playersDbService: PlayersDbService) { }  
 
     @Get('season/metadata')
     getSeasonMetaData(): Observable<Season> {
@@ -41,8 +41,7 @@ export class NhlController {
     getLogos(
         @Param('id') id: TeamsEnum,
         @Query('year') year?: number | string,
-        @Query('type') type?: 'dark' | 'light' | 'alt'
-    ): Observable<Logo[]> {
+        @Query('type') type?: 'dark' | 'light' | 'alt'): Observable<Logo[]> {
         return this.nhlService.getLogosByTeamId(id, year, type);
     }
 
@@ -97,10 +96,9 @@ export class NhlController {
     }
 
     @Get('save')
-    save(): Promise<{message: string}> {
+    save(): Promise<{ message: string }> {
         return this.playersDbService.savePlayersToMongoController();
     }
-
 
     @Get('country/:code')
     getCountryByID(@Param('code') code: string): Observable<any> {
