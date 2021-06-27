@@ -6,9 +6,10 @@ import { Request } from 'express';
 import { LeagueDocument } from './league.schema';
 import { AuthorizerGuard } from 'src/auth/authorizer.guard';
 import { SendEmailResponse } from 'aws-sdk/clients/ses';
+import { Socket } from 'socket.io';
 
 
-// @UseGuards(AuthorizerGuard)
+@UseGuards(AuthorizerGuard)
 @Controller('league')
 export class LeagueController {
 
@@ -19,7 +20,8 @@ export class LeagueController {
         @Req() req: Request,
         @Body() league: LeagueModel): Promise<LeagueDocument> {
         const bearer = req.headers.authorization;
-        return this.leagueService.createLeague(league, bearer);
+        const socket: Socket = req.headers['x-profile-socket'];
+        return this.leagueService.createLeague(league, bearer, socket);
     }
 
     @Get('my-league')
@@ -30,13 +32,11 @@ export class LeagueController {
 
     @Delete('delete/:id')
     deleteLeagueById(@Param('id') id: string) {
-        console.log(id)
         return this.leagueService.deleteLeagueById(id)
     }
 
     @Post('registration')
     sendEmail(@Body('toAddress') toAddress: string[]): Promise<SendEmailResponse> {
-        console.log(toAddress)
         return this.leagueService.sendEmailToJoinLeague(toAddress, 'lesTaps')
     }
 }

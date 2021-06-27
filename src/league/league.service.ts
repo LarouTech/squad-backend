@@ -5,7 +5,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { SES } from 'aws-sdk';
 import { SendEmailResponse } from 'aws-sdk/clients/ses';
 import { Model } from 'mongoose';
+import { Socket } from 'node:dgram';
 import { AuthService } from 'src/auth/auth.service';
+import { ProfileGateway } from 'src/profile/profile.gateway';
+import { ProfileService } from 'src/profile/profile.service';
 import { League, LeagueDocument } from './league.schema';
 import { LeagueModel } from './model/league.model';
 
@@ -15,6 +18,8 @@ export class LeagueService implements OnModuleInit {
     senderEmail: string;
 
     constructor(
+        // private profileService: ProfileService,
+        // private profileGateway: ProfileGateway,
         private configService: ConfigService,
         private authSrvice: AuthService,
         @InjectModel(League.name) private leagueModel: Model<LeagueDocument>) { }
@@ -24,18 +29,34 @@ export class LeagueService implements OnModuleInit {
     }
 
     //CREATE SQUAD LEAGUE IN MONGODB
-    async createLeague(league: LeagueModel, bearer: string): Promise<LeagueDocument> {
+    async createLeague(league: LeagueModel, bearer: string, socket: Socket): Promise<LeagueDocument> {
         const ownerId = await this.getUserId(bearer);
         league.ownerId = ownerId;
 
         const createLeague = new this.leagueModel(league);
 
         try {
-            return await createLeague.save();
+            const league =  await createLeague.save();
+
+
+            const isUserExist = league.GMs.gms.filter(g => g.isUserExist);
+            const newUser = league.GMs.gms.filter(g => !g.isUserExist);
+
+            // this.profileGateway.server.emit('joinLeagueNotificationEmitter', league)
+            // console.log(league)
+
+            return league
+
+
+
+
         } catch (error) {
             throw new NotFoundException(error);
         }
+
+
     }
+
 
     //DELETE LEAGUE BY ID
     async deleteLeagueById(id: string) {

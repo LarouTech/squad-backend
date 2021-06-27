@@ -43,6 +43,7 @@ export class AuthController {
 
     @Post('login')
     login(@Body() loginDto: LoginDto): Promise<AdminInitiateAuthResponse> {
+        console.log('barnouche')
         return this.authService.login(loginDto);
     }
 

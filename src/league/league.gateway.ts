@@ -2,7 +2,7 @@
 import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 
-@WebSocketGateway()
+@WebSocketGateway(3300, {namespace: 'league'})
 export class LeagueGateway {
 
   @WebSocketServer()

@@ -3,10 +3,10 @@ import { HttpService, Injectable, NotFoundException, OnModuleInit, UnauthorizedE
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { CognitoIdentityServiceProvider, S3 } from 'aws-sdk';
-import { AdminUpdateUserAttributesResponse } from 'aws-sdk/clients/cognitoidentityserviceprovider';
+import { AdminUpdateUserAttributesResponse, GetUserResponse } from 'aws-sdk/clients/cognitoidentityserviceprovider';
 import { S3PresignedUrl } from 'aws-sdk/clients/discovery';
-import jwt_decode from "jwt-decode";
-import { Model } from 'mongoose';
+import jwt_decode, { JwtPayload } from "jwt-decode";
+import { Model, UpdateWriteOpResult } from 'mongoose';
 import { Observable } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { AuthConfig } from 'src/auth/auth-config.model';
@@ -71,17 +71,59 @@ export class ProfileService implements OnModuleInit {
         const createProfile = new this.profileModel(profile);
 
         try {
-             return await createProfile.save();
+            return await createProfile.save();
         } catch (error) {
             throw new NotFoundException(error);
         }
     }
 
+    //ADD MESSAGE TO PROFILE
+    addMessage() {
+        console.log('toto le lapin')
+        return
+    }
+
+
+    //UPDATE LEAGUES ATTRIBUTE FROM USER PROFILE IN MONGODB
+    // async updateLeagueInProfile(update: Partial<Profile>, token: string, toDelete?: boolean): Promise<UpdateWriteOpResult> {
+
+    //     //RETRIEVE USER ATTRIBUTES
+    //     const userDetails: GetUserResponse = await this.cognitoClient.getUser({ AccessToken: token }).promise();
+    //     const profileId = userDetails.UserAttributes.find(attr => attr.Name === 'custom:profileId').Value;
+
+    //     //RETRIEVE USER PROFILE
+    //     try {
+    //         const profile = await this.profileModel.findOne({ _id: profileId })
+
+    //         if (profile.leagues && !toDelete) {
+    //             profile.leagues.forEach(element => {
+    //                 element.leagueId != update.leagues[0].leagueId ? update.leagues.push(element) : null
+    //             })
+    //         }
+
+    //         if(toDelete && update.leagues.length > 0) {
+    //             update.leagues = profile.leagues.filter(attr => attr.leagueId != update.leagues[0].leagueId)
+    //         }
+
+    //     } catch (error) {
+    //         throw new NotFoundException(error);
+    //     }
+
+    //     //UPDATE USER PROFILE
+    //     const updateProfile = this.profileModel.updateOne({ _id: profileId }, update)
+
+    //     try {
+    //         return await updateProfile
+    //     } catch (error) {
+    //         throw new NotFoundException(error);
+    //     }
+    // }
+
     //LINK PROFILE TO COGNITO
     async linkProfileToCognito(id: string, token: string): Promise<AdminUpdateUserAttributesResponse> {
         const decoded = jwt_decode(token)
         const sub = decoded['sub'];
-        
+
         const result = this.cognitoClient.adminUpdateUserAttributes({
             UserAttributes: [
                 {
