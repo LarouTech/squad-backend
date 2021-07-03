@@ -7,6 +7,8 @@ import { AuthModule } from './auth/auth.module';
 import configuration from './configuration';
 import { LeagueModule } from './league/league.module';
 import { NhlModule } from './nhl/nhl.module';
+import { ProfileModule } from './profile/profile.module';
+import { ProfileService } from './profile/profile.service';
 
 @Module({
   imports: [
@@ -14,8 +16,9 @@ import { NhlModule } from './nhl/nhl.module';
     MongooseModule.forRoot(`mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@cluster0.6dsrh.mongodb.net/${process.env.MONGODB_DATABASE}?retryWrites=true&w=majority`, { useNewUrlParser: true }),
     ScheduleModule.forRoot(),
     AuthModule,
+    NhlModule,
     LeagueModule,
-    NhlModule
+    ProfileModule
   ],
   controllers: [],
   providers: [],

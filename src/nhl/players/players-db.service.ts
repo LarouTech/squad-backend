@@ -5,14 +5,13 @@ import { Cron } from '@nestjs/schedule';
 import { Model, Query } from 'mongoose';
 import { Players } from '../models/players.model';
 import { NhlService } from '../nhl.service';
-import { Statistics } from './models/statistics.model';
-import { Player, PlayerDocument } from './player.schema';
+import { Player } from './player.schema';
 
 @Injectable()
 export class PlayersDbService {
 
     constructor(
-        @InjectModel(Player.name) private playerModel: Model<PlayerDocument>,
+        @InjectModel(Player.name) private playerModel: Model<Player>,
         private nhlService: NhlService) { }
 
     //PRIVATE GET ALL PLAYERS FROM MONGODB
@@ -59,7 +58,11 @@ export class PlayersDbService {
                 playerDataModel.save();
                 return player
             } else {
-                this.playerModel.updateOne({ _id: playerExist[0]._id });
+
+
+                this.playerModel.findOneAndUpdate({ _id: playerExist[0]._id }, {
+                    _stats: player.stats
+                })
             }
 
         } catch (error) {
@@ -67,6 +70,26 @@ export class PlayersDbService {
         }
 
     }
+
+    // //SAVE NEW PLAYER OR UPDATE IF EXIST IN MONGODB 
+    // private async saveOrUpdatePlayerRecords(player: Players) {
+    //     const playerDataModel = new this.playerModel(player);
+    //     const playerExist = await this.findPlayerByNhlId(player.id);
+
+    //     try {
+    //         if (!playerExist.length) {
+    //             playerDataModel.save();
+    //             return player
+    //         } else {
+    //             console.log('test')
+    //             this.playerModel.updateOne({ _id: playerExist[0]._id });
+    //         }
+
+    //     } catch (error) {
+    //         throw new NotFoundException(error);
+    //     }
+
+    // }
 
     //TRANSFORM GET ALL PLAYERS TO PROMISE FROM OBSERVABLE
     private async getPlayersPromisify(): Promise<Players[]> {
@@ -78,15 +101,15 @@ export class PlayersDbService {
                     playersObj = players;
                 })
         } catch (error) {
-            throw new NotFoundException('getPlayersPromisify');
+            throw new NotFoundException(error.response);
         }
 
         return playersObj;
     }
 
     //FIND PLAYER IN MONGO BY NHL PLAYER ID
-    private async findPlayerByNhlId(id: string): Promise<PlayerDocument[]> {
-        const player: Query<PlayerDocument[], PlayerDocument> = this.playerModel.find({ id: id });
+    private async findPlayerByNhlId(id: string): Promise<Player[]> {
+        const player: Query<Player[], Player> = this.playerModel.find({ id: id });
 
         try {
             return await player;

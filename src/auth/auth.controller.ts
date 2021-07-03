@@ -16,6 +16,7 @@ import {
     GetUserResponse,
     GlobalSignOutResponse,
     InitiateAuthResponse,
+    ListUsersResponse,
     SignUpResponse,
 } from 'aws-sdk/clients/cognitoidentityserviceprovider';
 
@@ -42,6 +43,7 @@ export class AuthController {
 
     @Post('login')
     login(@Body() loginDto: LoginDto): Promise<AdminInitiateAuthResponse> {
+        console.log('barnouche')
         return this.authService.login(loginDto);
     }
 
@@ -77,7 +79,7 @@ export class AuthController {
     }
 
     @Get('list-users')
-    listUsers() {
+    listUsers(): Promise<ListUsersResponse>  {
         return this.authService.listUsers()
     }
 

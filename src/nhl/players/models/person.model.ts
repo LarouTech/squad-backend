@@ -3,11 +3,11 @@ import { Prop } from "@nestjs/mongoose";
 
 export class Person {
     @Prop()
-    id: number;
+    id?: number;
 
     @Prop()
     fullName: string;
 
     @Prop()
-    link: string
+    link?: string
 }

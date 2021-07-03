@@ -3,11 +3,11 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from 'mongoose';
 import { Person } from "./models/person.model";
 import { Position } from "./models/position.model";
-import { LogosModel } from "./models/logo.model";
 import { TeamInfo } from "./models/team-info.model";
 import { Stats } from "./models/statistics.model";
+import { People, PeopleSchema } from "./models/people.model";
 
-export type PlayerDocument = Player & Document;
+// export type PlayerDocument = Player & Document;
 
 @Schema()
 export class Player extends Document {
@@ -35,6 +35,9 @@ export class Player extends Document {
     @Prop()
     actionshot: string;
 
+    @Prop({type: PeopleSchema})
+    people: People
+
 }
 
-export const PlayerSchema = SchemaFactory.createForClass(Player)
+export const PlayerSchema = SchemaFactory.createForClass(Player);
